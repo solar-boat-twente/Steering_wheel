@@ -20,17 +20,36 @@
    Sketch by max wolf / www.meso.net
    v. 0.1 - very basic functions - mw 20061220
 */
+/*
+ * COMMENT: Het werkt allemaal, er zijn alleen een paar comment mbt de naming conventions.
+ * Dit lijkt nog niet echt de data naar de computer te kunnen sturen, wil jij dit fixen of zal ik dat doen?
+ */
+
+
+
+/*
+ *COMMENT: Define pins like this: this is more readable 
+ * #define PIN_ENCODER_A 2
+ * #define PIN_ENCODER_B 4
+ * #define PIN_SWITCH 5
+ */
+
 
 // Define pins for encoder
 #define encoder0PinA  2  //CLK Output A Do not use other pin for clock as we are using interrupt
 #define encoder0PinB  4  //DT Output B
 #define Switch 5 // Switch connection if available
 
+
 volatile unsigned int encoder0Pos = 0; //current position of encoder
 bool reverse = false; //boolean om de boot in achter- / vooruit te zetten
-int check = 0;        //check om van achter- / vooruit te kunnen wisselen
 
+//COMMENT: voor de duidelijk (en het doel van dit duidelijk te maken) zou ik hem als een static definen in de variabele. (Niet persé
+// nodig maar wel net zo netjes)
+int check = 0;        //check om van achter- / vooruit te kunnen wisselen
 int encoder0PinALast = LOW;
+
+//COMMENT: deze moet wel globaal laten.
 int mode = 0;  //initial mode 1
 
 
@@ -47,6 +66,7 @@ void setup() {
   Serial.println("start");                // a personal quirk
 }
 
+//COMMENT: this works when you want to read the pins through serial, however we would like to output to the serial port.
 void loop() {
   // Call Throttle function
   Throttle();
@@ -61,7 +81,7 @@ void loop() {
 }
 
 
-
+//COMMENT: Look at the example 02.Digital -> StateChangeDetection. You can get bouncing you have to remove that
 void Direction() {
   // Zolang de knop ingedrukt is check in welke stand de boot staat en verander van richting
   while (digitalRead(Switch) == LOW) {
