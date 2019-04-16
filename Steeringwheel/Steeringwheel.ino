@@ -34,7 +34,7 @@
  * #define PIN_SWITCH 5
  */
 
-
+/*
 // Define pins for encoder
 #define encoder0PinA  2  //CLK Output A Do not use other pin for clock as we are using interrupt
 #define encoder0PinB  4  //DT Output B
@@ -153,3 +153,87 @@ void Throttle() {
 /*
  * COMMENT: example of serial in cpp in: https://www.cmrr.umn.edu/~strupp/serial.html * 
  */
+
+#define PIN_ENCODER_A 2
+#define PIN_ENCODER_B 4
+#define PIN_SWITCH 5
+#define PIN_THROTTLE A1
+//Initiates reverse at 0;
+bool reverse = false; 
+
+//Initiates the throttle at 0
+int throttle = 0;
+
+//Initiate mode on 0
+volatile int fly_mode = 0;
+
+void setup(){
+  pinMode(PIN_ENCODER_A, INPUT_PULLUP);
+  pinMode(PIN_ENCODER_B, INPUT_PULLUP);
+  pinMode(PIN_SWITCH, INPUT_PULLUP);
+  //Interrupt will continuously update pinmode
+  attachInterrupt(digitalPinToInterrupt(PIN_ENCODER_A), get_fly_mode, CHANGE);  
+  Serial.begin(9600);  
+}
+
+void loop(){
+  get_reverse();
+  get_throttle();
+  if(Serial.available()){
+    if(Serial.read()=='1'){
+      send_message();
+    }
+  }
+}
+
+void get_reverse(){
+  static int last_button_state = LOW;
+
+  int button_state = digitalRead(PIN_SWITCH);
+  
+  if (button_state != last_button_state){
+    if (button_state == HIGH){
+      reverse=~reverse;
+    }
+    delay(50);
+  }
+  last_button_state = button_state;
+}
+
+void get_throttle(){
+  throttle = analogRead(PIN_THROTTLE);
+
+  delay(10);
+}
+
+void get_fly_mode(){
+  static int encoder_position = 0;
+  int pin_A = digitalRead(PIN_ENCODER_A);
+  int pin_B = digitalRead(PIN_ENCODER_B);
+
+  if(pin_A == pin_B){
+    encoder_position++;
+  } else {
+    encoder_position--;
+  }
+
+  if ( encoder_position <= 2 ) {
+    fly_mode = 0;
+  } else if (2 < encoder_position && encoder_position < 5) {
+    fly_mode = 1;
+  } else if (5 <= encoder_position && encoder_position < 7) {
+    fly_mode = 2;
+  } else if (7 <= encoder_position) {
+    fly_mode = 3;
+  }
+}
+
+ 
+
+int send_message(){
+  Serial.print((reverse));
+  Serial.print((fly_mode));
+  Serial.print((throttle<<8));
+  Serial.print((throttle&0xFF));
+}
+
