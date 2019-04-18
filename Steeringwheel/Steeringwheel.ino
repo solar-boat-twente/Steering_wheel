@@ -158,7 +158,7 @@ void Throttle() {
 #define PIN_ENCODER_B 4
 #define PIN_SWITCH 5
 #define PIN_THROTTLE A1
-//Initiates reverse at 0;
+//Initiates reverse at 1 (but this is swapped at the start because the pin starts high;
 bool reverse = false; 
 
 //Initiates the throttle at 0
@@ -166,6 +166,10 @@ int throttle = 0;
 
 //Initiate mode on 0
 volatile int fly_mode = 0;
+
+//for Writing delay;
+unsigned long previousMillis = 0;
+int interval = 500;
 
 void setup(){
   pinMode(PIN_ENCODER_A, INPUT_PULLUP);
@@ -179,11 +183,19 @@ void setup(){
 void loop(){
   get_reverse();
   get_throttle();
+  unsigned long currentMillis = millis();
+  if(currentMillis-previousMillis>= interval){
+    previousMillis = currentMillis;
+    send_message();
+    Serial.write('\r');
+    Serial.write('\n');
+  }
+  /*
   if(Serial.available()){
-    if(Serial.read()=='1'){
+    if(Serial.read()=="1"){
       send_message();
     }
-  }
+    */
 }
 
 void get_reverse(){
@@ -192,8 +204,8 @@ void get_reverse(){
   int button_state = digitalRead(PIN_SWITCH);
   
   if (button_state != last_button_state){
-    if (button_state == HIGH){
-      reverse=~reverse;
+    if (button_state == LOW){
+      reverse = !reverse;
     }
     delay(50);
   }
@@ -210,11 +222,10 @@ void get_fly_mode(){
   static int encoder_position = 0;
   int pin_A = digitalRead(PIN_ENCODER_A);
   int pin_B = digitalRead(PIN_ENCODER_B);
-
   if(pin_A == pin_B){
-    encoder_position++;
-  } else {
     encoder_position--;
+  } else {
+    encoder_position++;
   }
 
   if ( encoder_position <= 2 ) {
@@ -231,9 +242,10 @@ void get_fly_mode(){
  
 
 int send_message(){
-  Serial.print((reverse));
-  Serial.print((fly_mode));
-  Serial.print((throttle<<8));
-  Serial.print((throttle&0xFF));
+  //Serial.write((reverse));
+  //Serial.write((fly_mode));
+  //Serial.write((throttle>>8));
+  //Serial.write((throttle&0xFF));
+  Serial.write((123));
 }
 
