@@ -169,7 +169,7 @@ volatile int fly_mode = 0;
 
 //for Writing delay;
 unsigned long previousMillis = 0;
-int interval = 90;
+int interval = 100;
 
 void setup(){
   pinMode(PIN_ENCODER_A, INPUT_PULLUP);
@@ -214,12 +214,12 @@ void get_reverse(){
 
 void get_throttle(){
   throttle = analogRead(PIN_THROTTLE);
-  throttle = 1023-throttle;
+
   delay(10);
 }
 
 void get_fly_mode(){
-  static int encoder_position = 4;
+  static int encoder_position = 0;
   int pin_A = digitalRead(PIN_ENCODER_A);
   int pin_B = digitalRead(PIN_ENCODER_B);
   if(pin_A == pin_B){
@@ -237,23 +237,20 @@ void get_fly_mode(){
   } else if (7 <= encoder_position) {
     fly_mode = 3;
   }
-  if (encoder_position>10){
-    encoder_position = 10;
-  } else if (encoder_position<-1){
-    encoder_position = -1;
+  if (encoder_position>7){
+    encoder_position = 7;
+  } else if (encoder_position<0){
+    encoder_position = 0;
   }
 }
 
  
 
 int send_message(){
-  Serial.write((reverse));
-  Serial.write((fly_mode));
-  Serial.write((throttle>>8));
+  Serial.print((reverse));
+  Serial.print((fly_mode));
+  Serial.print((throttle));
   Serial.write((throttle&0xFF));
-//  Serial.println(throttle);
-//  Serial.print(fly_mode);
-//  Serial.print(reverse);
   //Serial.write((123));
 }
 
